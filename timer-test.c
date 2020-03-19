@@ -48,11 +48,26 @@ static void timer_add(unsigned int seconds, timer_callback cb, void *cb_data)
 	debug("next = %lu\n", (long)next);
 }
 
-static void SIGALRM_handler(int __attribute__((unused)) signum)
+struct sig_events {
+	volatile sig_atomic_t alarm;
+};
+
+static struct sig_events sig_events = {
+	.alarm = 0,
+};
+
+static void SIGALRM_handler(int signum)
+{
+	//debug("SIGALRM\n");
+	sig_events.alarm = 1;
+	signal(signum, SIGALRM_handler);
+}
+
+static void on_sigalrm(void)
 {
 	time_t now;
 
-	log("-- SIGALRM_handler --\n");
+	log("-- on_sigalrm --\n");
 
 	now = time(NULL);
 	debug("time    = %ld\n", (long)now);
@@ -86,5 +101,9 @@ int main(int argc, char *argv[])
 		alarm(5);
 	}
 
-	while (1);
+	while (!sig_events.alarm);
+
+	on_sigalrm();
+
+	return EXIT_FAILURE;
 }

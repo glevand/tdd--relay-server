@@ -602,17 +602,31 @@ static int process_put(int client_fd, char *msg)
 		(result == put_result_updated) ? "UPD" : "QED");
 }
 
-static struct connection connection;
-
 struct sig_events {
-	bool alarm;
-	bool term;
+	volatile sig_atomic_t alarm;
+	volatile sig_atomic_t term;
 };
 
 static struct sig_events sig_events = {
-	.alarm = false,
-	.term = false,
+	.alarm = 0,
+	.term = 0,
 };
+
+static void SIGALRM_handler(int signum)
+{
+	//debug("SIGALRM\n");
+	sig_events.alarm = 1;
+	signal(signum, SIGALRM_handler);
+}
+
+static void SIGTERM_handler(int signum)
+{
+	//debug("SIGTERM\n");
+	sig_events.term = 1;
+	signal(signum, SIGTERM_handler);
+}
+
+static struct connection connection;
 
 static void procss_sock_events(unsigned int revents)
 {
@@ -655,18 +669,6 @@ static void procss_sock_events(unsigned int revents)
 		log("unknown cmd: '%s'\n", buf);
 		client_reply_and_close(client_fd, "ERR:unknown-cmd");
 	}
-}
-
-static void SIGTERM_handler(int __attribute__((unused)) signum)
-{
-	log("Exiting...\n");
-	sig_events.term = true;
-}
-
-static void SIGALRM_handler(int __attribute__((unused)) signum)
-{
-	debug("\n");
-	sig_events.alarm = true;
 }
 
 int main(int argc, char *argv[])
@@ -737,7 +739,7 @@ int main(int argc, char *argv[])
 		co_clean_waiters();
 
 		if (sig_events.alarm) {
-			sig_events.alarm = false;
+			sig_events.alarm = 0;
 			timer_start();
 		}
 
