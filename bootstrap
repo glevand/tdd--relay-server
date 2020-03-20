@@ -1,10 +1,12 @@
 #!/bin/sh
 
+echo ""
+
 progs="autoconf automake autopoint gettext libtoolize pkg-config"
 
 for p in ${progs}; do
 	if test -z "$(${p} --version 2>/dev/null)"; then
-		echo "Please install ${p}"
+		echo "Please install ${p}" >&2
 		result=1
 	fi
 done
