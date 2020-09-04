@@ -3,15 +3,16 @@
 echo ""
 
 progs="autoconf automake autopoint gettext libtoolize pkg-config"
-
 for p in ${progs}; do
-	if test -z "$(${p} --version 2>/dev/null)"; then
-		echo "Please install ${p}" >&2
+	if ! test -x "$(command -v ${p})"; then
+		echo "${script_name}: ERROR: Please install '${p}'." >&2
 		result=1
 	fi
 done
 
-[ -z ${result} ] || exit 1
+if [[ ${result} ]]; then
+	exit 1
+fi
 
 mkdir -p m4
 exec autoreconf --force --install ${@}
