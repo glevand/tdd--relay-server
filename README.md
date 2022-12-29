@@ -10,7 +10,7 @@ the master.  If there is a firewall between the master and any remote machines
 the relay service must accessible from outside the firewall.
 
 For setup see the TDD relay service
-[README](https://github.com/glevand/tdd--docker/blob/master/relay/README.md).
+[README](https://github.com/glevand/tdd--docker/blob/master/tdd-relay/README.md).
 
 ## Licence & Usage
 
